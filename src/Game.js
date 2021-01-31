@@ -30,6 +30,7 @@ import StateMachine from './StateMachine';
  */
 
 /**
+ * @constructor
  * @param { { verbose?: boolean } } [options={}]
  */
 export default function Game(options={}) {

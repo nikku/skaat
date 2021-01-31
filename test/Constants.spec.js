@@ -1,7 +1,7 @@
 import {
   Hand,
   Schneider
-} from '../lib';
+} from '../src';
 
 import { expect } from './chai';
 

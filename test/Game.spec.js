@@ -13,7 +13,7 @@ import {
   NoModifiers,
   isValidTrickCard,
   getTrickWinner
-} from '../lib';
+} from '../dist';
 
 
 describe('Game', function() {
@@ -359,7 +359,7 @@ describe('Game', function() {
       it('Grand', function() {
 
         // given
-        const game = new Game({ verbose: true });
+        const game = new Game();
 
         expect(game.next('start')).to.eql([ 'ask-bid', 2 ]);
         expect(game.next('pass', 2)).to.eql([ 'ask-bid', 0 ]);

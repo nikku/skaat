@@ -1,7 +1,7 @@
 .github
 client
 !dist
-lib
+src
 test
 .eslintrc
 tsconfig.json

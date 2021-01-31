@@ -1,6 +1,7 @@
 
 
 /**
+ * @constructor
  * @param { { verbose?: boolean } } [options={}]
  */
 export default function StateMachine(stepDefinitions, options={}) {

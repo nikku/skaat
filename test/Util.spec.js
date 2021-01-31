@@ -5,7 +5,7 @@ import {
   Clubs,
   Ramsch,
   Grand
-} from '../lib/Constants';
+} from '../src/Constants';
 
 import {
   isValidTrickCard,
@@ -13,7 +13,7 @@ import {
   getJacksModifier,
   compareCards,
   dealCards
-} from '../lib/Util';
+} from '../src/Util';
 
 
 describe('Util', function() {

@@ -15,7 +15,7 @@
     "esModuleInterop": true
   },
   "include": [
-    "lib",
+    "src",
     "run"
   ],
   "exclude": [

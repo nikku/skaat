@@ -1,4 +1,4 @@
-import { calculateResults } from '../lib/Results';
+import { calculateResults } from '../src/Results';
 
 import { expect } from './chai';
 
