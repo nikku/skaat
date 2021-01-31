@@ -13,7 +13,7 @@ import {
   NoModifiers,
   isValidTrickCard,
   getTrickWinner
-} from '../dist';
+} from '../src';
 
 
 describe('Game', function() {
