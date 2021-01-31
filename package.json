@@ -17,7 +17,8 @@
     "lint:eslint": "eslint .",
     "lint:types": "tsc --pretty",
     "generate-types": "tsc src/index.js -d --emitDeclarationOnly --removeComments --allowJs --outDir dist",
-    "test": "mocha -r esm"
+    "test": "mocha -r esm",
+    "prepublishOnly": "run-s build"
   },
   "repository": {
     "type": "git",
