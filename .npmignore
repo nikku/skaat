@@ -1,3 +1,8 @@
+.github
+client
+!dist
+lib
 test
 .eslintrc
 tsconfig.json
+rollup.config.js
