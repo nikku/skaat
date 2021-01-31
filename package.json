@@ -6,7 +6,7 @@
   "scripts": {
     "all": "run-s lint build test",
     "build": "echo \"no need to build\"",
-    "lint": "run-s lint:eslint",
+    "lint": "run-s lint:*",
     "lint:eslint": "eslint .",
     "lint:types": "tsc --pretty",
     "test": "mocha -r esm"

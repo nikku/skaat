@@ -1,5 +1,37 @@
+export type Win = 'win';
+export type Loss = 'loss';
+
+export type Suit = string;
+export type Picture = string;
 export type Player = number;
 export type Card = string;
+
+export type Game = {
+  suit: string;
+  modifiers: number;
+  jacks: number;
+};
+
+export type PointsPart = [ string, number ];
+
+export type Result = {
+  outcome: Win | Loss,
+  player: Player,
+  points: PointsPart[][],
+  reason?: [ Player, string ]
+};
+
+export type Bidding = {
+  leader: Player;
+  bidder: Player;
+  acknowledger: Player;
+  participants: Player[];
+  bid: number
+};
+
+export type PlayedCard = [ Player, Card ];
+
+export type Trick = PlayedCard[];
 
 export type State = {
 
@@ -7,31 +39,22 @@ export type State = {
   hands: Card[][];
   skat: Card[];
 
-  playerTurn?: Player;
-  playerAction?: string;
+  initialHands: Card[][];
+  initialSkat: Card[];
 
   // bidding
-  bidding?: {
-    leader?: Player;
-    bidder?: Player;
-    acknowledger: Player;
-    participants: Player[]
-    bid: number
-  };
-
-  // declaring
-  hand: boolean;
+  bidding?: Partial<Bidding>;
 
   // playing
-  game: {
-    declarer: Player;
-    suit: string;
-    hand: boolean;
-    open: boolean;
-    limit: number;
-  };
+  game?: Partial<Game>;
 
-  currentTrick: Card[];
+  currentTrick: Trick;
 
-  playerTricks: Card[][];
-}
+  playerTricks: Trick[][];
+
+  tricks: Trick[];
+
+  player?: Player;
+
+  result?: Partial<Result>;
+};

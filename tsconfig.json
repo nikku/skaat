@@ -16,8 +16,7 @@
   },
   "include": [
     "lib",
-    "run",
-    "test"
+    "run"
   ],
   "exclude": [
     "node_modules"

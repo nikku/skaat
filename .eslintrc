@@ -5,5 +5,8 @@
   "env": {
     "node": true,
     "es6": true
+  },
+  "rules": {
+    "no-bitwise": "off"
   }
 }

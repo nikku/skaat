@@ -4,16 +4,21 @@ import {
   Null,
   Clubs,
   Ramsch,
-  Grand,
+  Grand
+} from '../lib/Constants';
+
+import {
   isValidTrickCard,
   getTrickWinner,
-  compareCards
-} from '../lib';
+  getJacksModifier,
+  compareCards,
+  dealCards
+} from '../lib/Util';
 
 
 describe('Util', function() {
 
-  describe('isValidTrickCard', function() {
+  describe('#isValidTrickCard', function() {
 
     it('should determine card validity', function() {
 
@@ -41,7 +46,7 @@ describe('Util', function() {
   });
 
 
-  describe('compareCards', function() {
+  describe('#compareCards', function() {
 
     it('should compare', function() {
       expect(compareCards('♥J', '♣J', Null)).to.eql(1);
@@ -60,7 +65,7 @@ describe('Util', function() {
   });
 
 
-  describe('getTrickWinner', function() {
+  describe('#getTrickWinner', function() {
 
     it('should determine winner', function() {
 
@@ -87,10 +92,52 @@ describe('Util', function() {
 
   });
 
+
+  describe('#getJacksModifier', function() {
+
+    it('should compute modifier', function() {
+
+      // with
+      expect(getJacksModifier(hand('♣J', '♦J'))).to.eql(1);
+      expect(getJacksModifier(hand('♣J', '♠J', '♦J'))).to.eql(2);
+      expect(getJacksModifier(hand('♣J', '♠J', '♥J', '♦J'))).to.eql(4);
+
+      // without
+      expect(getJacksModifier(hand('♦J'))).to.eql(3);
+      expect(getJacksModifier(hand('♠J', '♦J'))).to.eql(1);
+      expect(getJacksModifier(hand('♥J'))).to.eql(2);
+    });
+
+  });
+
+
+  describe('#dealCards', function() {
+
+    it('should work', function() {
+
+      // when
+      const [ hands, skat ] = dealCards();
+
+      // then
+      expect(hands).to.have.length(3);
+
+      for (const hand of hands) {
+        expect(hand).to.have.length(10);
+      }
+
+      expect(skat).to.have.length(2);
+    });
+
+  });
+
 });
 
 
 // helpers //////////////////
+
+function hand(...args) {
+  return args;
+}
 
 function trick(...args) {
   return args.map((v, idx) => [ idx, v ]);
