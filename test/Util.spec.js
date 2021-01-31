@@ -91,6 +91,8 @@ describe('Util', function() {
       expect(getTrickWinner(trick('♥7', '♣7', '♦7'), Ramsch)).to.eql(0);
       expect(getTrickWinner(trick('♥7', '♣7', '♦7'), Clubs)).to.eql(1);
       expect(getTrickWinner(trick('♥7', '♣7', '♦7'), Null)).to.eql(0);
+
+      expect(getTrickWinner(trick('♥J', '♣K', '♦J'), Clubs)).to.eql(0);
     });
 
   });
