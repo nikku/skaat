@@ -5,6 +5,13 @@
 A [Skat](https://en.wikipedia.org/wiki/Skat_%28card_game%29) game loop.
 
 
+## Installation
+
+```
+npm install skaat
+```
+
+
 ## Usage
 
 ```javascript
