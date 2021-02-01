@@ -7,12 +7,12 @@
     "import": "./dist/index.es.js",
     "require": "./dist/index.cjs"
   },
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "skat",
     "game loop"
   ],
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "all": "run-s lint build test",
     "build": "run-s bundle generate-types",
