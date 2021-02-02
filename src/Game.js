@@ -27,6 +27,8 @@ import StateMachine from './StateMachine';
  * @typedef { import('./types').Card } Card
  * @typedef { import('./types').State } State
  * @typedef { import('./types').Result } Result
+ * @typedef { import('./types').Player } Player
+ * @typedef { import('./types').Suit } Suit
  */
 
 /**
@@ -41,7 +43,7 @@ export default function Game(options={}) {
 
   const players = [0, 1, 2];
 
-  let state = {
+  let state = /** @type {Partial<State>} */ ({
 
     // initialize
     initialHands: [],
@@ -61,7 +63,7 @@ export default function Game(options={}) {
     currentTrick: null,
     playerTricks: [],
     tricks: []
-  };
+  });
 
   const steps = [
     [ 'initial', 'start', () => {
@@ -106,7 +108,10 @@ export default function Game(options={}) {
       return [ 'ask-bid', bidder ];
     } ],
 
-    [ 'ask-bid', 'bid', (player, playerBid) => {
+    [ 'ask-bid', 'bid', (
+        /** @type {Player} */ player,
+        /** @type {number} */ playerBid
+    ) => {
 
       const {
         bidding
@@ -151,7 +156,7 @@ export default function Game(options={}) {
       }
     } ],
 
-    [ 'ask-bid', 'pass', (player) => {
+    [ 'ask-bid', 'pass', (/** @type {Player} */ player) => {
 
       const {
         bidding
@@ -199,7 +204,7 @@ export default function Game(options={}) {
       return [ 'ask-bid', bidder ];
     }],
 
-    [ 'ask-ack', 'ack', (player) => {
+    [ 'ask-ack', 'ack', (/** @type {Player} */ player) => {
 
       const {
         bidding
@@ -220,7 +225,7 @@ export default function Game(options={}) {
       return [ 'ask-bid', bidder ];
     } ],
 
-    [ 'ask-ack', 'pass', (player) => {
+    [ 'ask-ack', 'pass', (/** @type {Player} */ player) => {
 
       const {
         bidding
@@ -283,7 +288,7 @@ export default function Game(options={}) {
       return [ 'ask-declare', leader ];
     } ],
 
-    [ 'ask-declare', 'pick-skat', (player) => {
+    [ 'ask-declare', 'pick-skat', (/** @type {Player} */ player) => {
 
       const {
         skat,
@@ -308,7 +313,10 @@ export default function Game(options={}) {
       return [ 'ask-skat', player ];
     } ],
 
-    [ 'ask-skat', 'put-skat', (player, skat) => {
+    [ 'ask-skat', 'put-skat', (
+        /** @type {Player} */ player,
+        /** @type {Card[]} */ skat,
+    ) => {
 
       const {
         hands
@@ -337,7 +345,10 @@ export default function Game(options={}) {
       return [ 'ask-declare', player ];
     } ],
 
-    [ 'ask-declare', 'declare', (player, declaration) => {
+    [ 'ask-declare', 'declare', (
+        /** @type {Player} */ player,
+        /** @type { { suit: Suit, modifiers?: number } } */ declaration
+    ) => {
 
       const {
         game,
@@ -411,11 +422,12 @@ export default function Game(options={}) {
       return [ 'ask-card', players[1] ];
     } ],
 
-    [ 'ask-card', 'play-card', (player, card) => {
+    [ 'ask-card', 'play-card', (
+        /** @type { Player } */ player,
+        /** @type { Card } */ card
+    ) => {
 
-      const {
-        suit
-      } = state.game;
+      const suit = state.game.suit;
 
       const hand = state.hands[player];
 
@@ -436,19 +448,23 @@ export default function Game(options={}) {
         }
       });
 
-      const currentTrick = [ ...state.currentTrick, [ player, card ] ];
-
       state = {
         ...state,
         hands,
-        currentTrick
+        currentTrick: [ ...state.currentTrick, [ player, card ] ]
       };
 
-      if (currentTrick.length === 3) {
+      const currentTrick = state.currentTrick;
+
+      if (suit === Null && getTrickWinner(currentTrick, suit) === state.player) {
         return 'trick-complete';
-      } else {
-        return [ 'ask-card', (player + 1) % players.length ];
       }
+
+      if (state.currentTrick.length === 3) {
+        return 'trick-complete';
+      }
+
+      return [ 'ask-card', (player + 1) % players.length ];
     } ],
 
     [ 'trick-complete', () => {
@@ -478,8 +494,8 @@ export default function Game(options={}) {
         ...state,
         tricks,
         playerTricks,
-        lastTrick: currentTrick,
-        currentTrick: []
+        currentTrick: [],
+        lastTrick: currentTrick
       };
 
       // Null player took trick
@@ -494,7 +510,7 @@ export default function Game(options={}) {
       return [ 'ask-card', winner ];
     } ],
 
-    [ 'ask-card', 'give-up', (player) => {
+    [ 'ask-card', 'give-up', (/** @type {Player} */ player) => {
 
       const {
         player: _player,
@@ -524,7 +540,7 @@ export default function Game(options={}) {
         result: calculateResults(players, state)
       };
 
-      verbose && console.log('GAME game-finish', state.player, state.result, state.points);
+      verbose && console.log('GAME game-finish', state.player, state.result, state.result.points);
 
       return [ 'end' ];
     } ],
@@ -558,7 +574,7 @@ export default function Game(options={}) {
   /**
    * Return the game result after it completed.
    *
-   * @return {Result}
+   * @return {Partial<Result>}
    */
   this.getResult = function() {
     return state.result;

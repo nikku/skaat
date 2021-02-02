@@ -7,7 +7,7 @@ export type Player = number;
 export type Card = string;
 
 export type Game = {
-  suit: string;
+  suit: Suit;
   modifiers: number;
   jacks: number;
 };
@@ -49,6 +49,7 @@ export type State = {
   game?: Partial<Game>;
 
   currentTrick: Trick;
+  lastTrick: Trick;
 
   playerTricks: Trick[][];
 

@@ -56,7 +56,7 @@ function sumTricks(tricks) {
  * Calculate a Ramsch result.
  *
  * @param {Player[]} players
- * @param {State} state
+ * @param {Partial<State>} state
  *
  * @return {Result}
  */
@@ -89,7 +89,7 @@ function calculateRamschResults(players, state) {
  * Calculate a Null result.
  *
  * @param {Player[]} players
- * @param {State} state
+ * @param {Partial<State>} state
  *
  * @return {Result}
  */
@@ -140,7 +140,7 @@ function calculateNullResults(players, state) {
  * Calculate a suit (or Grand) result
  *
  * @param {Player[]} players
- * @param {State} state
+ * @param {Partial<State>} state
  *
  * @return {Result}
  */
@@ -214,7 +214,7 @@ function calculateSuitResults(players, state) {
  * Calculate results based on game state.
  *
  * @param {Player[]} players
- * @param {State} state
+ * @param {Partial<State>} state
  *
  * @return {Result}
  */
