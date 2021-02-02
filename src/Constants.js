@@ -41,14 +41,14 @@ export const ColorSuites = [
 ];
 
 export const Pictures = [
-  Seven,
-  Eight,
-  Nine,
+  Ace,
   Ten,
-  Jack,
-  Queen,
   King,
-  Ace
+  Queen,
+  Jack,
+  Nine,
+  Eight,
+  Seven
 ];
 
 export const PictureValues = {
@@ -74,4 +74,4 @@ export const CardValues = AllCards.reduce((values, card) => {
   return values;
 }, {});
 
-export const AllSuites = [ ...ColorSuites, Grand, Null ];
+export const AllSuites = [ ...ColorSuites, Grand, Ramsch, Null ];

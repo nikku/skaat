@@ -4,8 +4,11 @@ import {
   CardComponents,
   CardValues,
   ColorSuites,
+  Pictures,
   Jack,
-  Null
+  Null,
+  Ramsch,
+  Grand
 } from './Constants';
 
 /**
@@ -51,7 +54,7 @@ export function getTrickWinner(trick, trumpSuit) {
       winner = part;
     } else {
 
-      if (compareCards(winner[1], part[1], trumpSuit) < 0) {
+      if (beatsCompare(part[1], winner[1], trumpSuit) > 0) {
         winner = part;
       }
     }
@@ -101,10 +104,42 @@ export function isValidTrickCard(card, trick, hand, trumpSuit) {
 
 }
 
-const SUIT_ORDER = AllSuites;
+function scoreKeyed(arr) {
+  return arr.reduce((score, card, index) => {
+    score[card] = index + 1;
 
-const NULL_ORDER = [ '7', '8', '9', '10', 'J', 'Q', 'K', 'A' ];
-const DEFAULT_ORDER = [ '7', '8', '9', 'Q', 'K', '10', 'A', 'J' ];
+    return score;
+  }, {});
+}
+
+const SUIT_ORDER = scoreKeyed(ColorSuites);
+
+const NULL_ORDER = scoreKeyed([ 'A', 'K', 'Q', 'J', '10', '9', '8', '7' ]);
+const DEFAULT_ORDER = scoreKeyed([ 'A', '10', 'K', 'Q', '9', '8', '7' ]);
+
+const NON_JACK_PICTURES = Pictures.filter(p => p !== Jack);
+
+const JACKS = ColorSuites.map(suit => `${suit}${Jack}`);
+
+const TRUMP_CARDS = AllSuites.reduce((trumps, suit) => {
+  trumps[suit] = ((suit) => {
+
+    if (suit === Null) {
+      return [];
+    }
+
+    if (suit === Ramsch || suit === Grand) {
+      return scoreKeyed(JACKS);
+    }
+
+    return scoreKeyed([
+      ...JACKS,
+      ...NON_JACK_PICTURES.map(p => `${suit}${p}`)
+    ]);
+  })(suit);
+
+  return trumps;
+}, {});
 
 
 /**
@@ -114,35 +149,71 @@ const DEFAULT_ORDER = [ '7', '8', '9', 'Q', 'K', '10', 'A', 'J' ];
  *
  * @return {number}
  */
-export function compareCards(a, b, trumpSuit) {
+export function beatsCompare(a, b, trumpSuit) {
 
   const [ aSuit, aPicture ] = cardComponents(a);
 
   const [ bSuit, bPicture ] = cardComponents(b);
 
-  if (trumpSuit === Null) {
+  const trumps = TRUMP_CARDS[trumpSuit];
+  const order = trumpSuit === Null ? NULL_ORDER : DEFAULT_ORDER;
 
-    if (aSuit === bSuit) {
-      return NULL_ORDER.indexOf(aPicture) - NULL_ORDER.indexOf(bPicture);
-    }
+  if (trumps[a] && trumps[b]) {
+    return trumps[b] - trumps[a];
+  }
 
-    return 1;
-  } else {
-    if (aSuit === bSuit) {
-      return DEFAULT_ORDER.indexOf(aPicture) - DEFAULT_ORDER.indexOf(bPicture);
-    }
-
-    if (aPicture === Jack && bPicture === Jack) {
-      return SUIT_ORDER.indexOf(bSuit) - SUIT_ORDER.indexOf(aSuit);
-    }
-
-    if (bSuit === trumpSuit || bPicture === Jack) {
-      return -1;
-    }
-
+  if (trumps[a]) {
     return 1;
   }
 
+  if (trumps[b]) {
+    return -1;
+  }
+
+  if (aSuit === bSuit) {
+    return order[bPicture] - order[aPicture];
+  }
+
+  return -1;
+}
+
+
+/**
+ * @param {Card} a
+ * @param {Card} b
+ * @param {Suit} trumpSuit
+ * @return {number}
+ */
+export function semanticCompare(a, b, trumpSuit) {
+
+  const [ aSuit, aPicture ] = cardComponents(a);
+
+  const [ bSuit, bPicture ] = cardComponents(b);
+
+  const trumps = TRUMP_CARDS[trumpSuit];
+  const order = trumpSuit === Null ? NULL_ORDER : DEFAULT_ORDER;
+
+  if (trumps[a] && trumps[b]) {
+    return trumps[b] - trumps[a];
+  }
+
+  if (trumps[a]) {
+    return 1;
+  }
+
+  if (trumps[b]) {
+    return -1;
+  }
+
+  if (aSuit === bSuit) {
+    return order[bPicture] - order[aPicture];
+  }
+
+  return SUIT_ORDER[bSuit] - SUIT_ORDER[aSuit];
+}
+
+export function semanticSort(cards, suit) {
+  return cards.slice().sort((a, b) => semanticCompare(a, b, suit)).reverse();
 }
 
 /**

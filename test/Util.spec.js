@@ -4,14 +4,16 @@ import {
   Null,
   Clubs,
   Ramsch,
-  Grand
+  Grand,
+  Hearts
 } from '../src/Constants';
 
 import {
+  semanticSort,
   isValidTrickCard,
   getTrickWinner,
   getJacksModifier,
-  compareCards,
+  beatsCompare,
   dealCards
 } from '../src/Util';
 
@@ -46,20 +48,21 @@ describe('Util', function() {
   });
 
 
-  describe('#compareCards', function() {
+  describe('#beatsCompare', function() {
 
     it('should compare', function() {
-      expect(compareCards('♥J', '♣J', Null)).to.eql(1);
-      expect(compareCards('♥7', '♥10', Null)).to.eql(-3);
-      expect(compareCards('♥Q', '♥10', Null)).to.eql(2);
+      expect(beatsCompare('♥J', '♣J', Null)).to.eql(-1);
+      expect(beatsCompare('♥7', '♥10', Null)).to.eql(-3);
+      expect(beatsCompare('♥Q', '♥10', Null)).to.eql(2);
 
-      expect(compareCards('♥J', '♣J', Grand)).to.eql(-2);
-      expect(compareCards('♥10', '♣7', Clubs)).to.eql(-1);
-      expect(compareCards('♥10', '♦7', Clubs)).to.eql(1);
-      expect(compareCards('♣10', '♥J', Clubs)).to.eql(-1);
-      expect(compareCards('♣J', '♥J', Clubs)).to.eql(2);
-      expect(compareCards('♥7', '♥10', Clubs)).to.eql(-5);
-      expect(compareCards('♥Q', '♥10', Clubs)).to.eql(-2);
+      expect(beatsCompare('♥J', '♣J', Grand)).to.eql(-2);
+
+      expect(beatsCompare('♥10', '♣7', Clubs)).to.eql(-1);
+      expect(beatsCompare('♥10', '♦7', Clubs)).to.eql(-1);
+      expect(beatsCompare('♣10', '♥J', Clubs)).to.eql(-3);
+      expect(beatsCompare('♣J', '♥J', Clubs)).to.eql(2);
+      expect(beatsCompare('♥7', '♥10', Clubs)).to.eql(-5);
+      expect(beatsCompare('♥Q', '♥10', Clubs)).to.eql(-2);
     });
 
   });
@@ -126,6 +129,78 @@ describe('Util', function() {
       }
 
       expect(skat).to.have.length(2);
+    });
+
+  });
+
+
+  describe('#semanticSort', function() {
+
+    it('should sort Grand', function() {
+
+      expect(semanticSort([
+        '♣J', '♣7', '♠9', '♥7', '♦10', '♦A', '♠J', '♥J', '♦J', '♦7'
+      ], Grand)).to.eql([
+        '♣J', '♠J', '♥J', '♦J', '♣7', '♠9', '♥7', '♦A', '♦10', '♦7'
+      ]);
+
+      expect(semanticSort([
+        '♣7', '♣10', '♣A', '♠Q', '♦10', '♣J', '♦A', '♠7', '♥8', '♦K'
+      ], Grand)).to.eql([
+        '♣J', '♣A', '♣10', '♣7', '♠Q', '♠7', '♥8', '♦A', '♦10', '♦K'
+      ]);
+
+    });
+
+
+    it('should sort Null', function() {
+
+      expect(semanticSort([
+        '♣J', '♣7', '♠9', '♥7', '♦10', '♦A', '♠J', '♥J', '♦J', '♦7'
+      ], Null)).to.eql([
+        '♣J', '♣7', '♠J', '♠9', '♥J', '♥7', '♦A', '♦J', '♦10', '♦7'
+      ]);
+
+      expect(semanticSort([
+        '♣7', '♣10', '♣A', '♠Q', '♦10', '♣J', '♦A', '♠7', '♥8', '♦K'
+      ], Null)).to.eql([
+        '♣A', '♣J', '♣10', '♣7', '♠Q', '♠7', '♥8', '♦A', '♦K', '♦10'
+      ]);
+
+    });
+
+
+    it('should sort Ramsch', function() {
+
+      expect(semanticSort([
+        '♣J', '♣7', '♠9', '♥7', '♦10', '♦A', '♠J', '♥J', '♦J', '♦7'
+      ], Ramsch)).to.eql([
+        '♣J', '♠J', '♥J', '♦J', '♣7', '♠9', '♥7', '♦A', '♦10', '♦7'
+      ]);
+
+      expect(semanticSort([
+        '♣7', '♣10', '♣A', '♠Q', '♦10', '♣J', '♦A', '♠7', '♥8', '♦K'
+      ], Ramsch)).to.eql([
+        '♣J', '♣A', '♣10', '♣7', '♠Q', '♠7', '♥8', '♦A', '♦10', '♦K'
+      ]);
+
+    });
+
+
+    it('should sort Hearts', function() {
+
+      expect(semanticSort([
+        '♣J', '♣7', '♠9', '♥7', '♦10', '♦A', '♠J', '♥J', '♦J', '♦7'
+      ], Hearts)).to.eql([
+        '♣J', '♠J', '♥J', '♦J', '♥7', '♣7', '♠9', '♦A', '♦10', '♦7'
+      ]);
+
+      expect(semanticSort([
+        '♣7', '♣10', '♣A', '♠Q', '♦10', '♣J', '♦A', '♠7', '♥8', '♦K'
+      ], Hearts)).to.eql([
+        '♣J', '♥8', '♣A', '♣10', '♣7', '♠Q', '♠7', '♦A', '♦10', '♦K'
+      ]);
+
     });
 
   });
