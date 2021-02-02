@@ -1,6 +1,6 @@
 {
   "name": "skaat",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Skat game loop",
   "main": "dist/index.cjs",
   "exports": {
