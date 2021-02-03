@@ -1,24 +1,28 @@
-
+/**
+ * @typedef { [ next: string, actor: number ] | string } StepResult
+ * @typedef { (...args: any[]) => StepResult } StepFunction
+ * @typedef { [ start: string, next: string, fn: StepFunction ] | [ start: string, fn: StepFunction ] | [ end: string ] } StepDefinition
+ * @typedef { { verbose?: boolean; steps: StepDefinition[] } } StateMachineOptions
+ * @typedef { { state: string, expectedActor: number } } StateMachineStart
+ */
 
 /**
  * @constructor
- * @param { { verbose?: boolean } } [options={}]
+ * @param { StateMachineOptions } options
+ * @param { StateMachineStart } [start]
  */
-export default function StateMachine(stepDefinitions, options={}) {
+export default function StateMachine(options, start) {
 
-  const {
-    verbose = false
-  } = options;
+  let state = start && start.state || 'initial';
+  let expectedActor = start && start.expectedActor || null;
 
-  let state = 'initial';
+  const verbose = options.verbose || false;
 
-  let expectedActor = null;
-
-  const steps = stepDefinitions.reduce((map, steps) => {
+  const steps = options.steps.reduce((map, step) => {
 
     // default action
-    if (steps.length === 2) {
-      const [ state, action ] = steps;
+    if (step.length === 2) {
+      const [ state, action ] = step;
 
       if (map[state]) {
         throw new Error(`state <${state}> definition error: default action already registered`);
@@ -32,9 +36,9 @@ export default function StateMachine(stepDefinitions, options={}) {
     }
 
     // user action
-    if (steps.length === 3) {
+    if (step.length === 3) {
 
-      const [ state, next, action ] = steps;
+      const [ state, next, action ] = step;
 
       map[state] = map[state] || {
         paths: {}
@@ -50,8 +54,8 @@ export default function StateMachine(stepDefinitions, options={}) {
     }
 
     // end
-    if (steps.length === 1) {
-      const [ state ] = steps;
+    if (step.length === 1) {
+      const [ state ] = step;
 
       map[state] = {};
 

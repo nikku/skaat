@@ -29,526 +29,512 @@ import StateMachine from './StateMachine';
  * @typedef { import('./types').Result } Result
  * @typedef { import('./types').Player } Player
  * @typedef { import('./types').Suit } Suit
+ *
+ * @typedef { { state: Partial<State>, initialStep: string, expectedActor: number } } GameInit
  */
 
 /**
  * @constructor
- * @param { { verbose?: boolean } } [options={}]
+ * @param { { verbose?: boolean } } [options]
+ * @param {GameInit} [init]
  */
-export default function Game(options={}) {
+export default function Game(options, init) {
 
-  const {
-    verbose
-  } = options;
+  const verbose = options && options.verbose || false;
 
   const players = [0, 1, 2];
 
-  let state = /** @type {Partial<State>} */ ({
+  let state = init && init.state || {};
 
-    // initialize
-    initialHands: [],
-    initialSkat: [],
+  const stateMachine = new StateMachine({
+    steps: [
+      [ 'initial', 'start', () => {
+        return 'deal';
+      } ],
 
-    hands: [],
-    skat: [],
+      [ 'deal', () => {
+        const [
+          hands,
+          skat
+        ] = dealCards();
 
-    // bidding
-    bidding: null,
+        state = {
+          ...state,
+          initialHands: hands.map(h => h.slice()),
+          initialSkat: skat.slice(),
+          hands,
+          skat
+        };
 
-    // declaration
-    game: null,
+        return 'dealt';
+      } ],
 
-    // play
-    lastTrick: null,
-    currentTrick: null,
-    playerTricks: [],
-    tricks: []
-  });
+      [ 'dealt', () => {
+        return 'bidding-start';
+      } ],
 
-  const steps = [
-    [ 'initial', 'start', () => {
+      [ 'bidding-start', () => {
 
-      const [
-        hands,
-        skat
-      ] = dealCards();
+        const participants = players.slice();
 
-      state = {
-        ...state,
-        initialHands: hands.map(h => h.slice()),
-        initialSkat: skat.slice(),
-        hands,
-        skat
-      };
+        const bidder = participants[2];
 
-      return 'dealt';
-    } ],
+        state = {
+          ...state,
+          bidding: {
+            bidder,
+            acknowledger: participants[1],
+            participants,
+            leader: null,
+            bid: null
+          }
+        };
 
-    [ 'dealt', () => {
-      return 'bidding-start';
-    } ],
+        return [ 'ask-bid', bidder ];
+      } ],
 
-    [ 'bidding-start', () => {
+      [ 'ask-bid', 'bid', (
+          /** @type {Player} */ player,
+          /** @type {number} */ playerBid
+      ) => {
 
-      const participants = players.slice();
+        const {
+          bidding
+        } = state;
 
-      const bidder = participants[2];
+        const {
+          bid,
+          acknowledger
+        } = bidding;
 
-      state = {
-        ...state,
-        bidding: {
-          bidder,
-          acknowledger: participants[1],
-          participants,
-          leader: null,
-          bid: null
+        if (Math.floor(playerBid) !== playerBid) {
+          throw new Error(`expected integral bid, found ${playerBid}`);
         }
-      };
 
-      return [ 'ask-bid', bidder ];
-    } ],
+        const minBid = (bid ? bid : 18);
 
-    [ 'ask-bid', 'bid', (
-        /** @type {Player} */ player,
-        /** @type {number} */ playerBid
-    ) => {
+        if (playerBid < minBid) {
+          throw new Error(`expected bid >= ${minBid}, found ${playerBid}`);
+        }
 
-      const {
-        bidding
-      } = state;
+        if (acknowledger) {
+          state = {
+            ...state,
+            bidding: {
+              ...bidding,
+              leader: player,
+              bid: playerBid
+            }
+          };
 
-      const {
-        bid,
-        acknowledger
-      } = bidding;
+          return [ 'ask-ack', acknowledger ];
+        } else {
+          state = {
+            ...state,
+            bidding: {
+              leader: player,
+              bid: playerBid
+            }
+          };
 
-      if (Math.floor(playerBid) !== playerBid) {
-        throw new Error(`expected integral bid, found ${playerBid}`);
-      }
+          return 'bidding-completed';
+        }
+      } ],
 
-      const minBid = (bid ? bid : 18);
+      [ 'ask-bid', 'pass', (/** @type {Player} */ player) => {
 
-      if (playerBid < minBid) {
-        throw new Error(`expected bid >= ${minBid}, found ${playerBid}`);
-      }
+        const {
+          bidding
+        } = state;
 
-      if (acknowledger) {
+        const {
+          bid,
+          leader
+        } = bidding;
+
+        const participants = bidding.participants.filter(p => p !== player);
+
+        // everyone passed _or_
+        // last player remaining is leader
+        if (
+          (participants.length === 0) ||
+          (participants.length === 1 && leader)
+        ) {
+          state = {
+            ...state,
+            bidding: {
+              leader,
+              bid
+            }
+          };
+
+          return 'bidding-completed';
+        }
+
+        // player(s) remaining, swap bidder / acknowledger
+
+        const bidder = participants[0];
+        const acknowledger = participants.find(p => p !== bidder);
+
         state = {
           ...state,
           bidding: {
             ...bidding,
-            leader: player,
-            bid: playerBid
+            participants,
+            bidder,
+            acknowledger
           }
         };
 
-        return [ 'ask-ack', acknowledger ];
-      } else {
+        return [ 'ask-bid', bidder ];
+      } ],
+
+      [ 'ask-ack', 'ack', (/** @type {Player} */ player) => {
+
+        const {
+          bidding
+        } = state;
+
+        const {
+          bidder
+        } = bidding;
+
         state = {
           ...state,
           bidding: {
-            leader: player,
-            bid: playerBid
+            ...bidding,
+            leader: player
           }
         };
 
-        return 'bidding-completed';
-      }
-    } ],
+        return [ 'ask-bid', bidder ];
+      } ],
 
-    [ 'ask-bid', 'pass', (/** @type {Player} */ player) => {
+      [ 'ask-ack', 'pass', (/** @type {Player} */ player) => {
 
-      const {
-        bidding
-      } = state;
+        const {
+          bidding
+        } = state;
 
-      const {
-        bid,
-        leader
-      } = bidding;
+        const {
+          bid,
+          leader
+        } = bidding;
 
-      const participants = bidding.participants.filter(p => p !== player);
+        const participants = bidding.participants.filter(p => p !== player);
 
-      // everyone passed _or_
-      // last player remaining is leader
-      if (
-        (participants.length === 0) ||
-        (participants.length === 1 && leader)
-      ) {
+        // bidder wins
+        if (participants.length === 1) {
+          state = {
+            ...state,
+            bidding: {
+              leader,
+              bid
+            }
+          };
+
+          return 'bidding-completed';
+        }
+
+        const bidder = participants[0];
+        const acknowledger = bidding.bidder;
+
         state = {
           ...state,
           bidding: {
-            leader,
-            bid
+            ...bidding,
+            participants,
+            bidder,
+            acknowledger
           }
         };
 
-        return 'bidding-completed';
-      }
+        return [ 'ask-bid', bidder ];
+      } ],
 
-      // player(s) remaining, swap bidder / acknowledger
+      [ 'bidding-completed', () => {
 
-      const bidder = participants[0];
-      const acknowledger = participants.find(p => p !== bidder);
+        const {
+          bidding
+        } = state;
 
-      state = {
-        ...state,
-        bidding: {
-          ...bidding,
-          participants,
-          bidder,
-          acknowledger
-        }
-      };
+        const {
+          leader
+        } = bidding;
 
-      return [ 'ask-bid', bidder ];
-    }],
-
-    [ 'ask-ack', 'ack', (/** @type {Player} */ player) => {
-
-      const {
-        bidding
-      } = state;
-
-      const {
-        bidder
-      } = bidding;
-
-      state = {
-        ...state,
-        bidding: {
-          ...bidding,
-          leader: player
-        }
-      };
-
-      return [ 'ask-bid', bidder ];
-    } ],
-
-    [ 'ask-ack', 'pass', (/** @type {Player} */ player) => {
-
-      const {
-        bidding
-      } = state;
-
-      const {
-        bid,
-        leader
-      } = bidding;
-
-      const participants = bidding.participants.filter(p => p !== player);
-
-      // bidder wins
-      if (participants.length === 1) {
         state = {
           ...state,
-          bidding: {
-            leader,
-            bid
-          }
+          game: {
+            modifiers: Hand
+          },
+          player: leader
         };
 
-        return 'bidding-completed';
-      }
+        return [ 'ask-declare', leader ];
+      } ],
 
-      const bidder = participants[0];
-      const acknowledger = bidding.bidder;
+      [ 'ask-declare', 'pick-skat', (/** @type {Player} */ player) => {
 
-      state = {
-        ...state,
-        bidding: {
-          ...bidding,
-          participants,
-          bidder,
-          acknowledger
-        }
-      };
+        const {
+          skat,
+          hands,
+          game
+        } = state;
 
-      return [ 'ask-bid', bidder ];
-    } ],
+        const updatedHands = hands.slice();
 
-    [ 'bidding-completed', () => {
+        updatedHands[player] = updatedHands[player].concat(skat);
 
-      const {
-        bidding
-      } = state;
+        state = {
+          ...state,
+          game: {
+            ...game,
+            modifiers: game.modifiers & ~Hand
+          },
+          hands: updatedHands,
+          skat
+        };
 
-      const {
-        leader
-      } = bidding;
+        return [ 'ask-skat', player ];
+      } ],
 
-      state = {
-        ...state,
-        game: {
-          modifiers: Hand
-        },
-        player: leader
-      };
+      [ 'ask-skat', 'put-skat', (
+          /** @type {Player} */ player,
+          /** @type {Card[]} */ skat,
+      ) => {
 
-      return [ 'ask-declare', leader ];
-    } ],
+        const {
+          hands
+        } = state;
 
-    [ 'ask-declare', 'pick-skat', (/** @type {Player} */ player) => {
-
-      const {
-        skat,
-        hands,
-        game
-      } = state;
-
-      const updatedHands = hands.slice();
-
-      updatedHands[player] = updatedHands[player].concat(skat);
-
-      state = {
-        ...state,
-        game: {
-          ...game,
-          modifiers: game.modifiers & ~Hand
-        },
-        hands: updatedHands,
-        skat
-      };
-
-      return [ 'ask-skat', player ];
-    } ],
-
-    [ 'ask-skat', 'put-skat', (
-        /** @type {Player} */ player,
-        /** @type {Card[]} */ skat,
-    ) => {
-
-      const {
-        hands
-      } = state;
-
-      if (skat.length !== 2) {
-        throw new Error('must put two cards to skat');
-      }
-
-      const updatedHands = hands.slice();
-
-      const playerHand = updatedHands[player];
-
-      if (skat.some(card => !playerHand.includes(card))) {
-        throw new Error('cannot drop what is not on your hand');
-      }
-
-      updatedHands[player] = playerHand.filter(card => !skat.includes(card));
-
-      state = {
-        ...state,
-        hands: updatedHands,
-        skat
-      };
-
-      return [ 'ask-declare', player ];
-    } ],
-
-    [ 'ask-declare', 'declare', (
-        /** @type {Player} */ player,
-        /** @type { { suit: Suit, modifiers?: number } } */ declaration
-    ) => {
-
-      const {
-        game,
-        hands,
-        skat
-      } = state;
-
-      const {
-        suit
-      } = declaration;
-
-      if (!AllSuites.includes(suit)) {
-        throw new Error(`unknown suit <${suit}>`);
-      }
-
-      let declarationModifiers = declaration.modifiers || 0;
-
-      if (declarationModifiers & Hand) {
-        throw new Error('cannot declare Hand');
-      }
-
-      if (suit === Null) {
-        if (declarationModifiers & Schneider) {
-          throw new Error('illegal modifier <Schneider> for suit <Null>');
+        if (skat.length !== 2) {
+          throw new Error('must put two cards to skat');
         }
 
-        if (declarationModifiers & Schwarz) {
-          throw new Error('illegal modifier <Schwarz> for suit <Null>');
+        const updatedHands = hands.slice();
+
+        const playerHand = updatedHands[player];
+
+        if (skat.some(card => !playerHand.includes(card))) {
+          throw new Error('cannot drop what is not on your hand');
         }
-      }
 
-      const gameModifiers = game.modifiers || 0;
+        updatedHands[player] = playerHand.filter(card => !skat.includes(card));
 
-      // Schwarz implies Schneider
-      if (declarationModifiers & Schwarz) {
-        declarationModifiers = declarationModifiers | Schneider;
-      }
+        state = {
+          ...state,
+          hands: updatedHands,
+          skat
+        };
 
-      const jacksModifier = suit !== Null ? {
-        jacks: getJacksModifier([ ...hands[player], ...skat ])
-      } : {};
+        return [ 'ask-declare', player ];
+      } ],
 
-      const modifiers = declarationModifiers | gameModifiers;
+      [ 'ask-declare', 'declare', (
+          /** @type {Player} */ player,
+          /** @type { { suit: Suit, modifiers?: number } } */ declaration
+      ) => {
 
-      state = {
-        ...state,
-        game: {
-          ...game,
-          ...jacksModifier,
-          modifiers,
+        const {
+          game,
+          hands,
+          skat
+        } = state;
+
+        const {
           suit
+        } = declaration;
+
+        if (!AllSuites.includes(suit)) {
+          throw new Error(`unknown suit <${suit}>`);
         }
-      };
 
-      return 'declared';
-    } ],
+        let declarationModifiers = declaration.modifiers || 0;
 
-    [ 'declared', () => {
-      return 'game-start';
-    } ],
-
-    [ 'game-start', () => {
-
-      state = {
-        ...state,
-        playerTricks: players.map(p => []),
-        currentTrick: [],
-        tricks: []
-      };
-
-      return [ 'ask-card', players[1] ];
-    } ],
-
-    [ 'ask-card', 'play-card', (
-        /** @type { Player } */ player,
-        /** @type { Card } */ card
-    ) => {
-
-      const suit = state.game.suit;
-
-      const hand = state.hands[player];
-
-      if (!hand.includes(card)) {
-        throw new Error(`card <${card}> not in <${player}> hand`);
-      }
-
-      if (!isValidTrickCard(card, state.currentTrick, hand, suit)) {
-        throw new Error(`invalid card <${card}> in current trick`);
-      }
-
-      // remove card from hand
-      const hands = state.hands.map((hand, p) => {
-        if (player !== player) {
-          return hand;
-        } else {
-          return hand.filter(c => c !== card);
+        if (declarationModifiers & Hand) {
+          throw new Error('cannot declare Hand');
         }
-      });
 
-      state = {
-        ...state,
-        hands,
-        currentTrick: [ ...state.currentTrick, [ player, card ] ]
-      };
+        if (suit === Null) {
+          if (declarationModifiers & Schneider) {
+            throw new Error('illegal modifier <Schneider> for suit <Null>');
+          }
 
-      const currentTrick = state.currentTrick;
-
-      if (suit === Null && getTrickWinner(currentTrick, suit) === state.player) {
-        return 'trick-complete';
-      }
-
-      if (state.currentTrick.length === 3) {
-        return 'trick-complete';
-      }
-
-      return [ 'ask-card', (player + 1) % players.length ];
-    } ],
-
-    [ 'trick-complete', () => {
-
-      const {
-        currentTrick,
-        player
-      } = state;
-
-      const {
-        suit
-      } = state.game;
-
-      const winner = getTrickWinner(currentTrick, state.game.suit);
-
-      const tricks = [ ...state.tricks, currentTrick ];
-      const playerTricks = state.playerTricks.map((tricks, player) => {
-
-        if (player !== winner) {
-          return tricks;
-        } else {
-          return [ ...tricks, currentTrick ];
+          if (declarationModifiers & Schwarz) {
+            throw new Error('illegal modifier <Schwarz> for suit <Null>');
+          }
         }
-      });
 
-      state = {
-        ...state,
-        tricks,
-        playerTricks,
-        currentTrick: [],
-        lastTrick: currentTrick
-      };
+        const gameModifiers = game.modifiers || 0;
 
-      // Null player took trick
-      if (suit === Null && player === winner) {
-        return 'game-finish';
-      }
+        // Schwarz implies Schneider
+        if (declarationModifiers & Schwarz) {
+          declarationModifiers = declarationModifiers | Schneider;
+        }
 
-      if (tricks.length === 10) {
-        return 'game-finish';
-      }
+        const jacksModifier = suit !== Null ? {
+          jacks: getJacksModifier([ ...hands[player], ...skat ])
+        } : {};
 
-      return [ 'ask-card', winner ];
-    } ],
+        const modifiers = declarationModifiers | gameModifiers;
 
-    [ 'ask-card', 'give-up', (/** @type {Player} */ player) => {
+        state = {
+          ...state,
+          game: {
+            ...game,
+            ...jacksModifier,
+            modifiers,
+            suit
+          }
+        };
 
-      const {
-        player: _player,
-        game
-      } = state;
+        return 'declared';
+      } ],
 
-      if (game.suit === Ramsch) {
-        throw new Error('cannot give up a game of Ramsch');
-      }
+      [ 'declared', () => {
+        return 'game-start';
+      } ],
 
-      state = {
-        ...state,
-        result: {
+      [ 'game-start', () => {
+
+        state = {
+          ...state,
+          playerTricks: players.map(p => []),
+          currentTrick: [],
+          lastTrick: null,
+          tricks: []
+        };
+
+        return [ 'ask-card', players[1] ];
+      } ],
+
+      [ 'ask-card', 'play-card', (
+          /** @type { Player } */ player,
+          /** @type { Card } */ card
+      ) => {
+
+        const suit = state.game.suit;
+
+        const hand = state.hands[player];
+
+        if (!hand.includes(card)) {
+          throw new Error(`card <${card}> not in <${player}> hand`);
+        }
+
+        if (!isValidTrickCard(card, state.currentTrick, hand, suit)) {
+          throw new Error(`invalid card <${card}> in current trick`);
+        }
+
+        // remove card from hand
+        const hands = state.hands.map((hand, p) => {
+          if (player !== player) {
+            return hand;
+          } else {
+            return hand.filter(c => c !== card);
+          }
+        });
+
+        state = {
+          ...state,
+          hands,
+          currentTrick: [ ...state.currentTrick, [ player, card ] ]
+        };
+
+        const currentTrick = state.currentTrick;
+
+        if (suit === Null && getTrickWinner(currentTrick, suit) === state.player) {
+          return 'trick-complete';
+        }
+
+        if (state.currentTrick.length === 3) {
+          return 'trick-complete';
+        }
+
+        return [ 'ask-card', (player + 1) % players.length ];
+      } ],
+
+      [ 'trick-complete', () => {
+
+        const {
+          currentTrick,
+          player
+        } = state;
+
+        const {
+          suit
+        } = state.game;
+
+        const winner = getTrickWinner(currentTrick, state.game.suit);
+
+        const tricks = [ ...state.tricks, currentTrick ];
+        const playerTricks = state.playerTricks.map((tricks, player) => {
+
+          if (player !== winner) {
+            return tricks;
+          } else {
+            return [ ...tricks, currentTrick ];
+          }
+        });
+
+        state = {
+          ...state,
+          tricks,
+          playerTricks,
+          currentTrick: [],
+          lastTrick: currentTrick
+        };
+
+        // Null player took trick
+        if (suit === Null && player === winner) {
+          return 'game-finish';
+        }
+
+        if (tricks.length === 10) {
+          return 'game-finish';
+        }
+
+        return [ 'ask-card', winner ];
+      } ],
+
+      [ 'ask-card', 'give-up', (/** @type {Player} */ player) => {
+
+        const {
           player: _player,
-          outcome: player === _player ? Loss : Win,
-          reason: [ player, 'give-up' ]
+          game
+        } = state;
+
+        if (game.suit === Ramsch) {
+          throw new Error('cannot give up a game of Ramsch');
         }
-      };
 
-      return 'game-finish';
-    } ],
+        state = {
+          ...state,
+          result: {
+            player: _player,
+            outcome: player === _player ? Loss : Win,
+            reason: [ player, 'give-up' ]
+          }
+        };
 
-    [ 'game-finish', () => {
+        return 'game-finish';
+      } ],
 
-      state = {
-        ...state,
-        result: calculateResults(players, state)
-      };
+      [ 'game-finish', () => {
 
-      verbose && console.log('GAME game-finish', state.player, state.result, state.result.points);
+        state = {
+          ...state,
+          result: calculateResults(players, state)
+        };
 
-      return [ 'end' ];
-    } ],
+        verbose && console.log('GAME game-finish', state.player, state.result, state.result.points);
 
-    [ 'end' ]
-  ];
+        return 'end';
+      } ],
 
-  const stateMachine = new StateMachine(steps, { verbose });
+      [ 'end' ]
+    ],
+    verbose
+  });
 
 
   // API ///////////////////////
