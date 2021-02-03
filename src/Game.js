@@ -442,10 +442,6 @@ export default function Game(options, init) {
 
         const currentTrick = state.currentTrick;
 
-        if (suit === Null && getTrickWinner(currentTrick, suit) === state.player) {
-          return 'trick-complete';
-        }
-
         if (state.currentTrick.length === 3) {
           return 'trick-complete';
         }
