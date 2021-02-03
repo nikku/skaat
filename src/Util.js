@@ -19,6 +19,66 @@ import {
  * @typedef { import('./types').Player } Player
  */
 
+function scoreKeyed(arr) {
+  return arr.reduce((score, card, index) => {
+    score[card] = index + 1;
+
+    return score;
+  }, {});
+}
+
+const NULL_PICTURES = [ 'A', 'K', 'Q', 'J', '10', '9', '8', '7' ];
+const COLOR_PICTURES = [ 'A', '10', 'K', 'Q', '9', '8', '7' ];
+
+const JACKS = ColorSuites.map(suit => `${suit}${Jack}`);
+
+const COLOR_CARDS = AllSuites.reduce((colorCards, trumpSuit) => {
+
+  const generateCards = trumpSuit === Null
+    ? (suit) => NULL_PICTURES.map(p => `${suit}${p}`)
+    : (suit) => COLOR_PICTURES.map(p => `${suit}${p}`);
+
+  colorCards[trumpSuit] = ColorSuites.reduce((map, suit) => {
+    map[suit] = generateCards(suit);
+
+    return map;
+  }, {});
+
+  return colorCards;
+}, {});
+
+const SUIT_ORDER = scoreKeyed(ColorSuites);
+
+const TRUMP_ORDER = AllSuites.reduce((trumps, suit) => {
+  trumps[suit] = ((suit) => {
+
+    if (suit === Null) {
+      return [];
+    }
+
+    if (suit === Ramsch || suit === Grand) {
+      return scoreKeyed(JACKS);
+    }
+
+    return scoreKeyed([
+      ...JACKS,
+      ...COLOR_CARDS[suit][suit]
+    ]);
+  })(suit);
+
+  return trumps;
+}, {});
+
+const COLOR_ORDER = Object.entries(COLOR_CARDS).reduce((byTrump, [suit, cardsBySuit]) => {
+
+  byTrump[suit] = Object.entries(cardsBySuit).reduce((bySuit, [ suit, cards]) => {
+    bySuit[suit] = scoreKeyed(cards);
+
+    return bySuit;
+  }, {});
+
+  return byTrump;
+}, {});
 
 /**
  * @param {Card} card
@@ -77,70 +137,28 @@ export function isValidTrickCard(card, trick, hand, trumpSuit) {
     return true;
   }
 
-  const [ firstSuit, firstPicture ] = cardComponents(trick[0][1]);
+  const firstCard = trick[0][1];
 
-  const [ cardSuit, cardPicture ] = cardComponents(card);
+  const trumps = TRUMP_ORDER[trumpSuit];
 
-  if (trumpSuit === Null) {
-    return firstSuit === cardSuit || !hand.some(card => cardComponents(card)[0] === firstSuit);
-  }
-
-  // trump is played
-  if (firstSuit === trumpSuit || firstPicture === Jack) {
-
-    return (cardSuit === trumpSuit || cardPicture === Jack) || !hand.some(card => {
-      const [ cardSuit, cardPicture ] = cardComponents(card);
-
-      return cardSuit === trumpSuit || cardPicture === Jack;
-    });
-  }
-
-  // something else is played
-  return (cardSuit === firstSuit && cardSuit !== Jack) || !hand.some(card => {
-    const [ cardSuit ] = cardComponents(card);
-
-    return cardSuit === firstSuit && cardSuit !== Jack;
-  });
-
-}
-
-function scoreKeyed(arr) {
-  return arr.reduce((score, card, index) => {
-    score[card] = index + 1;
-
-    return score;
-  }, {});
-}
-
-const SUIT_ORDER = scoreKeyed(ColorSuites);
-
-const NULL_ORDER = scoreKeyed([ 'A', 'K', 'Q', 'J', '10', '9', '8', '7' ]);
-const DEFAULT_ORDER = scoreKeyed([ 'A', '10', 'K', 'Q', '9', '8', '7' ]);
-
-const NON_JACK_PICTURES = Pictures.filter(p => p !== Jack);
-
-const JACKS = ColorSuites.map(suit => `${suit}${Jack}`);
-
-const TRUMP_CARDS = AllSuites.reduce((trumps, suit) => {
-  trumps[suit] = ((suit) => {
-
-    if (suit === Null) {
-      return [];
+  if (trumps[firstCard]) {
+    if (trumps[card]) {
+      return true;
     }
 
-    if (suit === Ramsch || suit === Grand) {
-      return scoreKeyed(JACKS);
-    }
+    return !hand.some(card => trumps[card]);
+  }
 
-    return scoreKeyed([
-      ...JACKS,
-      ...NON_JACK_PICTURES.map(p => `${suit}${p}`)
-    ]);
-  })(suit);
+  const [ suit ] = cardComponents(firstCard);
 
-  return trumps;
-}, {});
+  const color = COLOR_ORDER[trumpSuit][suit];
 
+  if (color[card]) {
+    return true;
+  }
+
+  return !hand.some(card => color[card]);
+}
 
 /**
  * @param {Card} a
@@ -151,12 +169,11 @@ const TRUMP_CARDS = AllSuites.reduce((trumps, suit) => {
  */
 export function beatsCompare(a, b, trumpSuit) {
 
-  const [ aSuit, aPicture ] = cardComponents(a);
+  const [ aSuit ] = cardComponents(a);
 
-  const [ bSuit, bPicture ] = cardComponents(b);
+  const [ bSuit ] = cardComponents(b);
 
-  const trumps = TRUMP_CARDS[trumpSuit];
-  const order = trumpSuit === Null ? NULL_ORDER : DEFAULT_ORDER;
+  const trumps = TRUMP_ORDER[trumpSuit];
 
   if (trumps[a] && trumps[b]) {
     return trumps[b] - trumps[a];
@@ -171,7 +188,9 @@ export function beatsCompare(a, b, trumpSuit) {
   }
 
   if (aSuit === bSuit) {
-    return order[bPicture] - order[aPicture];
+    const colorOrder = COLOR_ORDER[trumpSuit][bSuit];
+
+    return colorOrder[b] - colorOrder[a];
   }
 
   return -1;
@@ -186,12 +205,11 @@ export function beatsCompare(a, b, trumpSuit) {
  */
 export function semanticCompare(a, b, trumpSuit) {
 
-  const [ aSuit, aPicture ] = cardComponents(a);
+  const [ aSuit ] = cardComponents(a);
 
-  const [ bSuit, bPicture ] = cardComponents(b);
+  const [ bSuit ] = cardComponents(b);
 
-  const trumps = TRUMP_CARDS[trumpSuit];
-  const order = trumpSuit === Null ? NULL_ORDER : DEFAULT_ORDER;
+  const trumps = TRUMP_ORDER[trumpSuit];
 
   if (trumps[a] && trumps[b]) {
     return trumps[b] - trumps[a];
@@ -206,7 +224,9 @@ export function semanticCompare(a, b, trumpSuit) {
   }
 
   if (aSuit === bSuit) {
-    return order[bPicture] - order[aPicture];
+    const colorOrder = COLOR_ORDER[trumpSuit][bSuit];
+
+    return colorOrder[b] - colorOrder[a];
   }
 
   return SUIT_ORDER[bSuit] - SUIT_ORDER[aSuit];

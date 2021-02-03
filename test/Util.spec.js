@@ -13,6 +13,7 @@ import {
   isValidTrickCard,
   getTrickWinner,
   getJacksModifier,
+  semanticCompare,
   beatsCompare,
   dealCards
 } from '../src/Util';
@@ -26,7 +27,13 @@ describe('Util', function() {
 
       // erste Karte
       expect(isValidTrickCard('♣9', trick(), [ '♣9', '♥9' ], Clubs)).to.be.true;
+      expect(isValidTrickCard('♣9', trick(), [ '♣9', '♥9' ], Grand)).to.be.true;
+      expect(isValidTrickCard('♣9', trick(), [ '♣9', '♥9' ], Null)).to.be.true;
+      expect(isValidTrickCard('♣9', trick(), [ '♣9', '♥9' ], Ramsch)).to.be.true;
       expect(isValidTrickCard('♥9', trick(), [ '♣9', '♥9' ], Clubs)).to.be.true;
+      expect(isValidTrickCard('♥9', trick(), [ '♣9', '♥9' ], Grand)).to.be.true;
+      expect(isValidTrickCard('♥9', trick(), [ '♣9', '♥9' ], Null)).to.be.true;
+      expect(isValidTrickCard('♥9', trick(), [ '♣9', '♥9' ], Ramsch)).to.be.true;
 
       // bedienen
       expect(isValidTrickCard('♣9', trick('♣7'), [ '♣9', '♥9' ], Clubs)).to.be.true;
@@ -37,12 +44,20 @@ describe('Util', function() {
       // stechen
       expect(isValidTrickCard('♣9', trick('♥7'), [ '♣9', '♥10' ], Clubs)).to.be.false;
       expect(isValidTrickCard('♣9', trick('♦7'), [ '♣9', '♥10' ], Clubs)).to.be.true;
+      expect(isValidTrickCard('♣J', trick('♦7'), [ '♣J', '♥10' ], Clubs)).to.be.true;
+      expect(isValidTrickCard('♥J', trick('♦7'), [ '♥J', '♥10' ], Clubs)).to.be.true;
+      expect(isValidTrickCard('♣J', trick('♦7'), [ '♣J', '♥10' ], Grand)).to.be.true;
+      expect(isValidTrickCard('♥J', trick('♦7'), [ '♥J', '♥10' ], Grand)).to.be.true;
 
       // abwerfen
       expect(isValidTrickCard('♦9', trick('♥7'), [ '♣9', '♦9' ], Clubs)).to.be.true;
       expect(isValidTrickCard('♦9', trick('♥7'), [ '♣9', '♦9' ], Null)).to.be.true;
       expect(isValidTrickCard('♣J', trick('♥J'), [ '♣J', '♥9' ], Null)).to.be.false;
       expect(isValidTrickCard('♣J', trick('♥J'), [ '♣J', '♦9' ], Null)).to.be.true;
+      expect(isValidTrickCard('♣9', trick('♥9'), [ '♣9', '♦9' ], Grand)).to.be.true;
+      expect(isValidTrickCard('♦9', trick('♣J'), [ '♥J', '♦9' ], Grand)).to.be.false;
+      expect(isValidTrickCard('♦9', trick('♣J'), [ '♥8', '♦9' ], Grand)).to.be.true;
+      expect(isValidTrickCard('♦9', trick('♠9'), [ '♠J', '♦9' ], Hearts)).to.be.true;
     });
 
   });
@@ -63,6 +78,20 @@ describe('Util', function() {
       expect(beatsCompare('♣J', '♥J', Clubs)).to.eql(2);
       expect(beatsCompare('♥7', '♥10', Clubs)).to.eql(-5);
       expect(beatsCompare('♥Q', '♥10', Clubs)).to.eql(-2);
+    });
+
+  });
+
+
+  describe('#semanticCompare', function() {
+
+    it('should compare', function() {
+      expect(semanticCompare('♦10', '♥7', Hearts)).to.eql(-1);
+      expect(semanticCompare('♦A', '♥7', Hearts)).to.eql(-1);
+      expect(semanticCompare('♥7', '♦10', Hearts)).to.eql(1);
+      expect(semanticCompare('♥7', '♦A', Hearts)).to.eql(1);
+      expect(semanticCompare('♦J', '♥7', Hearts)).to.eql(7);
+      expect(semanticCompare('♥7', '♦J', Hearts)).to.eql(-7);
     });
 
   });
@@ -93,6 +122,8 @@ describe('Util', function() {
       expect(getTrickWinner(trick('♥7', '♣7', '♦7'), Null)).to.eql(0);
 
       expect(getTrickWinner(trick('♥J', '♣K', '♦J'), Clubs)).to.eql(0);
+      expect(getTrickWinner(trick('♥J', '♣K', '♣J'), Clubs)).to.eql(2);
+
     });
 
   });
