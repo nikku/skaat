@@ -440,8 +440,6 @@ export default function Game(options, init) {
           currentTrick: [ ...state.currentTrick, [ player, card ] ]
         };
 
-        const currentTrick = state.currentTrick;
-
         if (state.currentTrick.length === 3) {
           return 'trick-complete';
         }
