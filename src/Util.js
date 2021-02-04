@@ -46,13 +46,13 @@ const COLOR_CARDS = AllSuites.reduce((colorCards, trumpSuit) => {
   return colorCards;
 }, {});
 
-const SUIT_ORDER = scoreKeyed(ColorSuites);
+export const SUIT_ORDER = scoreKeyed(ColorSuites);
 
-const TRUMP_ORDER = AllSuites.reduce((trumps, suit) => {
+export const TRUMP_ORDER = AllSuites.reduce((trumps, suit) => {
   trumps[suit] = ((suit) => {
 
     if (suit === Null) {
-      return [];
+      return scoreKeyed([]);
     }
 
     if (suit === Ramsch || suit === Grand) {
@@ -68,7 +68,7 @@ const TRUMP_ORDER = AllSuites.reduce((trumps, suit) => {
   return trumps;
 }, {});
 
-const COLOR_ORDER = Object.entries(COLOR_CARDS).reduce((byTrump, [suit, cardsBySuit]) => {
+export const COLOR_ORDER = Object.entries(COLOR_CARDS).reduce((byTrump, [suit, cardsBySuit]) => {
 
   byTrump[suit] = Object.entries(cardsBySuit).reduce((bySuit, [ suit, cards]) => {
     bySuit[suit] = scoreKeyed(cards);
