@@ -15,6 +15,9 @@
     "skat",
     "game loop"
   ],
+  "engines": {
+    "node": ">= 16"
+  },
   "scripts": {
     "all": "run-s lint build test",
     "build": "run-s bundle generate-types",
