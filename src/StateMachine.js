@@ -1,3 +1,5 @@
+/* global console */
+
 /**
  * @typedef { [ next: string, actor: number ] | string } StepResult
  * @typedef { (...args: any[]) => StepResult } StepFunction

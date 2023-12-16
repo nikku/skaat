@@ -1,3 +1,5 @@
+/* global console */
+
 import {
   AllSuites,
   Null,
@@ -42,7 +44,7 @@ export default function Game(options, init) {
 
   const verbose = options && options.verbose || false;
 
-  const players = [0, 1, 2];
+  const players = [ 0, 1, 2 ];
 
   let state = init && init.state || {};
 

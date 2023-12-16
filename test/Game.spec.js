@@ -223,7 +223,7 @@ describe('Game', function() {
       const lastWinner = getTrickWinner(game.state.lastTrick, game.state.game.suit);
 
       expect(game.state.playerTricks).to.eql(
-        [0, 1, 2].map(p => p === lastWinner ? [
+        [ 0, 1, 2 ].map(p => p === lastWinner ? [
           game.state.lastTrick
         ] : [])
       );
