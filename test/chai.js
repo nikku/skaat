@@ -1,1 +1,1 @@
-export { default, expect } from 'chai';
+export { expect } from 'chai';
