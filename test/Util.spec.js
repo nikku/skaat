@@ -18,6 +18,10 @@ import {
   dealCards
 } from '../src/Util.js';
 
+/**
+ * @typedef { import('../src/types.js').Trick } Trick
+ */
+
 
 describe('Util', function() {
 
@@ -247,6 +251,11 @@ function hand(...args) {
   return args;
 }
 
+/**
+ * @param  {...string} args
+ *
+ * @return { Trick }
+ */
 function trick(...args) {
-  return args.map((v, idx) => [ idx, v ]);
+  return /** @type { Trick } */ (args.map((v, idx) => [ idx, v ]));
 }
