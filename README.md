@@ -29,3 +29,8 @@ game.next('declare', 0, { suit: Clubs }); // 'ask-card', 1
 
 ...
 ```
+
+
+## Related
+
+* [skaat-app](https://github.com/nikku/skaat-app)
