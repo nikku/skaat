@@ -4,7 +4,7 @@
 
 A [Skat](https://en.wikipedia.org/wiki/Skat_%28card_game%29) game loop.
 
-Can be embedded to build a full featured Skat application: [:arrow_right: Demo](https://oqojq.csb.app/).
+Can be embedded to build a full featured Skat application: [:arrow_right: Demo](https://nikku.github.io/skaat-app/).
 
 
 ## Installation
