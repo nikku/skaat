@@ -1,9 +1,0 @@
-.github
-client
-!dist
-src
-test
-.eslintignore
-.eslintrc
-tsconfig.json
-rollup.config.js
