@@ -24,7 +24,7 @@
     "bundle": "rollup -c",
     "lint": "run-s lint:*",
     "lint:eslint": "eslint .",
-    "lint:types": "tsc --pretty",
+    "lint:types": "tsc --pretty --noEmit",
     "generate-types": "bio-dts -r --outDir dist src",
     "test": "mocha",
     "prepare": "run-s build"

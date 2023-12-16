@@ -10,7 +10,6 @@
     "checkJs": true,
     "rootDir": ".",
     "strict": false,
-    "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
