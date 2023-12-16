@@ -547,6 +547,11 @@ export default function Game(options, init) {
 
   // expose state //////////////
 
+  /**
+   * @type { Partial<State> }
+   */
+  this.state = state;
+
   Object.defineProperty(this, 'state', {
     get: () => state
   });
