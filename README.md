@@ -1,6 +1,6 @@
 # skaat
 
-[![CI Status](https://img.shields.io/github/workflow/status/nikku/skaat/CI)](https://github.com/nikku/skaat/actions?query=workflow%3ACI)
+[![CI](https://github.com/nikku/skaat/actions/workflows/CI.yml/badge.svg)](https://github.com/nikku/skaat/actions/workflows/CI.yml)
 
 A [Skat](https://en.wikipedia.org/wiki/Skat_%28card_game%29) game loop.
 
