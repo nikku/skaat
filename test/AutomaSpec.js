@@ -1,6 +1,8 @@
-import Automa from '../src/Automa';
-import { Win } from '../src/Constants';
-import Game from '../src/Game';
+import {
+  Automa,
+  Game,
+  Win
+} from '../src/index.js';
 
 
 describe('Automa', function() {

@@ -8,7 +8,7 @@ import {
   cardComponents,
   TRUMP_ORDER,
   isValidTrickCard
-} from './Util';
+} from './Util.js';
 
 import {
   ColorSuites,
@@ -21,7 +21,7 @@ import {
   Hearts,
   Diamonds,
   Grand
-} from './Constants';
+} from './Constants.js';
 
 const BIDS = [ 18, 20, 22, 23, 24, 27, 30, 33, 35, 36, 40, 44, 46, 48, 50 ];
 

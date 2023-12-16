@@ -15,11 +15,11 @@ import {
   Spades,
   Hearts,
   Diamonds
-} from './Constants';
+} from './Constants.js';
 
 import {
   getCardValue
-} from './Util';
+} from './Util.js';
 
 /**
  * @typedef { import('./types').Player } Player

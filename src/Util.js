@@ -8,7 +8,7 @@ import {
   Null,
   Ramsch,
   Grand
-} from './Constants';
+} from './Constants.js';
 
 /**
  * @typedef { import('./types').Card } Card

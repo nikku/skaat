@@ -1,7 +1,7 @@
-export * from './Constants';
+export * from './Constants.js';
 
-export * from './Util';
+export * from './Util.js';
 
-export { default as Game } from './Game';
+export { default as Game } from './Game.js';
 
-export { default as Automa } from './Automa';
+export { default as Automa } from './Automa.js';

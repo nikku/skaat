@@ -1,6 +1,6 @@
-import { calculateResults } from '../src/Results';
+import { calculateResults } from '../src/Results.js';
 
-import { expect } from './chai';
+import { expect } from './chai.js';
 
 
 describe('Results', function() {

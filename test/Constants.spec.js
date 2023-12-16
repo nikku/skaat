@@ -1,9 +1,9 @@
 import {
   Hand,
   Schneider
-} from '../src';
+} from '../src/index.js';
 
-import { expect } from './chai';
+import { expect } from './chai.js';
 
 
 describe('Constants', function() {

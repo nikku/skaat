@@ -1,4 +1,4 @@
-import { expect } from './chai';
+import { expect } from './chai.js';
 
 import {
   Game,
@@ -13,7 +13,7 @@ import {
   NoModifiers,
   isValidTrickCard,
   getTrickWinner
-} from '../src';
+} from '../src/index.js';
 
 
 describe('Game', function() {

@@ -7,21 +7,21 @@ import {
   Schneider,
   Win,
   Loss
-} from './Constants';
+} from './Constants.js';
 
 import {
   isValidTrickCard,
   getTrickWinner,
   getJacksModifier,
   dealCards
-} from './Util';
+} from './Util.js';
 
 import {
   calculateResults
-} from './Results';
+} from './Results.js';
 
 
-import StateMachine from './StateMachine';
+import StateMachine from './StateMachine.js';
 
 /**
  * @typedef { import('./types').Card } Card

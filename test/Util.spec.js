@@ -1,4 +1,4 @@
-import { expect } from './chai';
+import { expect } from './chai.js';
 
 import {
   Null,
@@ -6,7 +6,7 @@ import {
   Ramsch,
   Grand,
   Hearts
-} from '../src/Constants';
+} from '../src/Constants.js';
 
 import {
   semanticSort,
@@ -16,7 +16,7 @@ import {
   semanticCompare,
   beatsCompare,
   dealCards
-} from '../src/Util';
+} from '../src/Util.js';
 
 
 describe('Util', function() {
