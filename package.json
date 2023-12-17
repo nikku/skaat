@@ -11,6 +11,7 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "keywords": [
     "skat",
     "game loop"
