@@ -19,9 +19,8 @@
     "node": ">= 16"
   },
   "scripts": {
-    "all": "run-s lint build test",
-    "build": "run-s bundle generate-types",
-    "bundle": "rollup -c",
+    "all": "run-s generate-types lint build test",
+    "build": "rollup -c",
     "lint": "run-s lint:*",
     "lint:eslint": "eslint .",
     "lint:types": "tsc --pretty --noEmit",
