@@ -51,7 +51,6 @@ export type Picture =
 export type Card = `${ColorSuit}${Picture}`;
 
 export type Player = number;
-export type Card = string;
 
 export type GameModifiers = number;
 export type GameStep = string;
