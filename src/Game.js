@@ -32,7 +32,13 @@ import StateMachine from './StateMachine.js';
  * @typedef { import('./types').Player } Player
  * @typedef { import('./types').Suit } Suit
  *
- * @typedef { { state: Partial<State>, initialStep: string, expectedActor: number } } GameInit
+ * @typedef { import('./types').GameStep } GameStep
+ *
+ * @typedef { {
+ *   state: Partial<State>,
+ *   initialStep: GameStep,
+ *   expectedActor: Player
+ * } } GameInit
  */
 
 /**
@@ -535,7 +541,14 @@ export default function Game(options, init) {
 
   // API ///////////////////////
 
+  /**
+   * @param { [ step: GameStep ] | [ step: GameStep, player: Player, ...unknown[] ] } args
+   *
+   * @return { [ step: GameStep, actor: Player | null ] }
+   */
   this.next = function(...args) {
+
+    // @ts-ignore-error
     const result = stateMachine.next(...args);
 
     const [ next, actor ] = result;

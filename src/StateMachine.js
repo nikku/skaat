@@ -9,7 +9,6 @@
  */
 
 /**
- * @constructor
  * @param { StateMachineOptions } options
  * @param { StateMachineStart } [start]
  */
@@ -71,6 +70,13 @@ export default function StateMachine(options, start) {
     throw new Error(`state <${state}> required`);
   }
 
+  /**
+   * @param {string} nextState
+   * @param {number} [actor]
+   * @param {...unknown} args
+   *
+   * @return { [ next: string, actor: number | null ] }
+   */
   function next(nextState, actor = null, ...args) {
     verbose && console.log(`next START <${ printActor(actor) }> ${state} -> ${nextState}`, ...args);
 
