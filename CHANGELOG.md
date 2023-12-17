@@ -6,6 +6,10 @@ All notable changes to [skaat](https://github.com/nikku/skaat) are documented he
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.3.0
+
+* `FEAT`: improve `Game` typings
+
 ## 0.2.0
 
 * `FEAT`: improve typings
