@@ -6,6 +6,11 @@ All notable changes to [skaat](https://github.com/nikku/skaat) are documented he
 
 ___Note:__ Yet to be released changes appear here._
 
+## 0.2.0
+
+* `FEAT`: improve typings
+* `FIX`: rename `Suite` to `Suit`
+
 ## 0.1.1
 
 * `FIX`: expose `Game.state` via types
