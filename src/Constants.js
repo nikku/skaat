@@ -33,13 +33,26 @@ export const AllModifiers  = 0b00001111111;
 export const Win = 'win';
 export const Loss = 'loss';
 
-export const ColorSuites = [
+/**
+ * @typedef { import("./types").ColorSuit } ColorSuit
+ * @typedef { import("./types").Suit } Suit
+ * @typedef { import("./types").Card } Card
+ * @typedef { import("./types").Picture } Picture
+ */
+
+/**
+ * @type { ColorSuit[] }
+ */
+export const ColorSuits = [
   Clubs,
   Spades,
   Hearts,
   Diamonds
 ];
 
+/**
+ * @type { Picture[] }
+ */
 export const Pictures = [
   Ace,
   Ten,
@@ -51,6 +64,9 @@ export const Pictures = [
   Seven
 ];
 
+/**
+ * @type { Record<Picture, number> }
+ */
 export const PictureValues = {
   [Seven]: 0,
   [Eight]: 0,
@@ -62,16 +78,41 @@ export const PictureValues = {
   [Ace]: 11
 };
 
-export const AllCards = ColorSuites.map(s => Pictures.map(p => `${s}${p}`)).flat();
+/**
+ * @type { Card[] }
+ */
+export const AllCards = /** @type { Card[] } */ (
+  ColorSuits.map(s => Pictures.map(p => `${s}${p}`)).flat()
+);
 
+/**
+ * @typedef { Record<Card, [ ColorSuit, Picture ]>} CardComponents
+ */
+
+/**
+ * @type { CardComponents }
+ */
 export const CardComponents = AllCards.reduce((components, card) => {
-  components[card] = /^(♣|♠|♥|♦)(.*)$/.exec(card).slice(1);
-  return components;
-}, {});
+  components[card] = /** @type { [ ColorSuit, Picture ] } */ (
+    /^(♣|♠|♥|♦)(.*)$/.exec(card).slice(1)
+  );
 
+  return components;
+}, /** @type { CardComponents } */ ({}));
+
+/**
+ * @typedef { Record<Card, number>} CardValues
+ */
+
+/**
+ * @type { CardValues }
+ */
 export const CardValues = AllCards.reduce((values, card) => {
   values[card] = PictureValues[CardComponents[card][1]];
   return values;
-}, {});
+}, /** @type { CardValues } */ ({}));
 
-export const AllSuites = [ ...ColorSuites, Grand, Ramsch, Null ];
+/**
+ * @type { Suit[] }
+ */
+export const AllSuits = [ ...ColorSuits, Grand, Ramsch, Null ];

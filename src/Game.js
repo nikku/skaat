@@ -1,7 +1,7 @@
 /* global console */
 
 import {
-  AllSuites,
+  AllSuits,
   Null,
   Ramsch,
   Hand,
@@ -347,7 +347,7 @@ export default function Game(options, init) {
           suit
         } = declaration;
 
-        if (!AllSuites.includes(suit)) {
+        if (!AllSuits.includes(suit)) {
           throw new Error(`unknown suit <${suit}>`);
         }
 

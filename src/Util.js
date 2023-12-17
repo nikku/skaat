@@ -1,9 +1,9 @@
 import {
   AllCards,
-  AllSuites,
+  AllSuits,
   CardComponents,
   CardValues,
-  ColorSuites,
+  ColorSuits,
   Jack,
   Null,
   Ramsch,
@@ -29,15 +29,15 @@ function scoreKeyed(arr) {
 const NULL_PICTURES = [ 'A', 'K', 'Q', 'J', '10', '9', '8', '7' ];
 const COLOR_PICTURES = [ 'A', '10', 'K', 'Q', '9', '8', '7' ];
 
-const JACKS = ColorSuites.map(suit => `${suit}${Jack}`);
+const JACKS = ColorSuits.map(suit => `${suit}${Jack}`);
 
-const COLOR_CARDS = AllSuites.reduce((colorCards, trumpSuit) => {
+const COLOR_CARDS = AllSuits.reduce((colorCards, trumpSuit) => {
 
   const generateCards = trumpSuit === Null
     ? (suit) => NULL_PICTURES.map(p => `${suit}${p}`)
     : (suit) => COLOR_PICTURES.map(p => `${suit}${p}`);
 
-  colorCards[trumpSuit] = ColorSuites.reduce((map, suit) => {
+  colorCards[trumpSuit] = ColorSuits.reduce((map, suit) => {
     map[suit] = generateCards(suit);
 
     return map;
@@ -46,9 +46,9 @@ const COLOR_CARDS = AllSuites.reduce((colorCards, trumpSuit) => {
   return colorCards;
 }, {});
 
-export const SUIT_ORDER = scoreKeyed(ColorSuites);
+export const SUIT_ORDER = scoreKeyed(ColorSuits);
 
-export const TRUMP_ORDER = AllSuites.reduce((trumps, suit) => {
+export const TRUMP_ORDER = AllSuits.reduce((trumps, suit) => {
   trumps[suit] = ((suit) => {
 
     if (suit === Null) {
@@ -254,7 +254,7 @@ export function findCard(suit, picture) {
  * @return {number}
  */
 export function getJacksModifier(cards) {
-  const result = ColorSuites.reduce((val, suit) => {
+  const result = ColorSuits.reduce((val, suit) => {
 
     // skip
     if (val && val[2]) {
@@ -285,7 +285,7 @@ const dealSequence = Array.from('11122233344111122223333111222333').map(s => par
 /**
  * Dealing cards, TÜF Rheinland geprüft. 🥳
  *
- * @return { [ hands: [ Card[], Card[], Card[] ], skat: Card[] ]}
+ * @return { [ hands: [ Card[], Card[], Card[] ], skat: Card[] ] }
  */
 export function dealCards() {
 
@@ -316,6 +316,7 @@ export function dealCards() {
  *
  * @template T
  * @param {T[]} arr
+ *
  * @return {T[]}
  */
 export function shuffle(arr) {

@@ -1,5 +1,12 @@
 /**
- * @typedef {import('./types').Player} Player
+ * @typedef { import('./types').Player } Player
+ * @typedef { import('./types').Card } Card
+ * @typedef { import('./types').Suit } Suit
+ *
+ * @typedef { import('./types').GameState } GameState
+ * @typedef { import('./types').GameStep } GameStep
+ *
+ * @typedef { import('./Game').default } Game
  */
 
 /* eslint "no-constant-condition": Off */
@@ -11,7 +18,7 @@ import {
 } from './Util.js';
 
 import {
-  ColorSuites,
+  ColorSuits,
   Hand,
   Null,
   NoModifiers,
@@ -25,6 +32,9 @@ import {
 
 const BIDS = [ 18, 20, 22, 23, 24, 27, 30, 33, 35, 36, 40, 44, 46, 48, 50 ];
 
+/**
+ * @type { Record<import('./types').Picture, number> }
+ */
 const NULL_GAME_CARD_VALUES = {
   'A': -2,
   'K': -2,
@@ -36,6 +46,9 @@ const NULL_GAME_CARD_VALUES = {
   '7': 2
 };
 
+/**
+ * @type { Record<import('./types').Picture, number> }
+ */
 const COLOR_GAME_CARD_VALUES = {
   'A': 5,
   '10': 3,
@@ -55,6 +68,14 @@ export default function Automa() {
 
   let pickedSkat = false;
 
+  /**
+   * @param { Game } game
+   * @param { GameStep } step
+   * @param { Player } player
+   * @param { ...unknown } args
+   *
+   * @return { [ GameStep, ...unknown[] ] } next step
+   */
   this.next = (game, step, player, ...args) => {
 
     switch (step) {
@@ -122,7 +143,7 @@ export default function Automa() {
         value
       } = evaluateHand(game.state.hands[player]);
 
-      const nextBid = next(bid, BIDS);
+      const nextBid = increaseBid(bid, BIDS);
 
       if (value >= nextBid) {
         return [ 'bid', nextBid ];
@@ -139,12 +160,21 @@ export default function Automa() {
 
 // helpers ////////////
 
+/**
+ * @param {Card[]} hand
+ *
+ * @return { {
+ *   modifiers: import('./types').GameModifiers,
+ *   suit: import('./types').Suit,
+ *   value: number
+ * } }
+ */
 function evaluateHand(hand) {
 
   const nullValue = hand.reduce((sum, card) => {
     const [ _, picture ] = cardComponents(card);
 
-    return sum + NULL_GAME_CARD_VALUES[picture];
+    return sum + /** @type { number } */ (NULL_GAME_CARD_VALUES[picture]);
   }, 0);
 
   // let's play Null
@@ -156,14 +186,14 @@ function evaluateHand(hand) {
     };
   }
 
-  const trumps = ColorSuites.map(suit => {
+  const trumps = ColorSuits.map(suit => {
 
     const cards = hand.filter(card => TRUMP_ORDER[suit][card]);
     const cardsValue = cards.reduce((sum, card) => {
 
       const [ _, picture ] = cardComponents(card);
 
-      return sum + COLOR_GAME_CARD_VALUES[picture];
+      return sum + /** @type { number } */ (COLOR_GAME_CARD_VALUES[picture]);
     }, 0);
 
     return {
@@ -173,7 +203,7 @@ function evaluateHand(hand) {
     };
   });
 
-  const sortedTrumps = trumps.sort((a, b) => b.cards - a.cards);
+  const sortedTrumps = trumps.sort((a, b) => b.cards.length - a.cards.length);
 
   const {
     suit,
@@ -204,6 +234,12 @@ function evaluateHand(hand) {
 
 }
 
+/**
+ * @param { Card[] } hand
+ * @param { Suit } suit
+ *
+ * @return { [ Card, Card ] }
+ */
 function dropSkat(hand, suit) {
   const skat = [];
 
@@ -224,13 +260,26 @@ function dropSkat(hand, suit) {
     }
   }
 
-  return skat;
+  return /** @type { [ Card, Card ] } */ (skat);
 }
 
-function next(bid, maxBidbids) {
-  return BIDS.find(b => b > bid) || (bid + 5);
+/**
+ * @param {number} bid
+ * @param {number[]} bids
+ *
+ * @return {number}
+ */
+function increaseBid(bid, bids) {
+  return bids.find(b => b > bid) || (bid + 5);
 }
 
+/**
+ * @template T
+ *
+ * @param {T[]} arr
+ *
+ * @return {T}
+ */
 function randomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
